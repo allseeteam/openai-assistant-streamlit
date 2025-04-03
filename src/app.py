@@ -5,31 +5,29 @@ import streamlit as st
 from openai import OpenAI
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
+from src.settings import settings
 
 def check_password():
     def password_entered():
-        if st.session_state["password"] == st.secrets["password"]:
+        if st.session_state["password"] == settings.streamlit_system.PASSWORD:
             st.session_state["password_correct"] = True
             del st.session_state["password"]
         else:
             st.session_state["password_correct"] = False
 
     if "password_correct" not in st.session_state:
-        st.text_input("Введите пароль", type="password", on_change=password_entered, key="password")
+        st.text_input(settings.streamlit_texts.PASSWORD_REQUEST, type="password", on_change=password_entered, key="password")
         return False
     elif not st.session_state["password_correct"]:
-        st.text_input("Введите пароль", type="password", on_change=password_entered, key="password")
-        st.error("Неверный пароль")
+        st.text_input(settings.streamlit_texts.PASSWORD_REQUEST, type="password", on_change=password_entered, key="password")
+        st.error(settings.streamlit_texts.PASSWORD_INCORRECT)
         return False
     else:
         return True
 
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-ASSISTANT_ID = st.secrets["ASSISTANT_ID"]
-
-# Initialise the OpenAI client, and retrieve the assistant
-client = OpenAI(api_key=OPENAI_API_KEY)
-assistant = client.beta.assistants.retrieve(assistant_id=ASSISTANT_ID)
+# Initialize the OpenAI client, and retrieve the assistant
+client = OpenAI(api_key=settings.openai.API_KEY)
+assistant = client.beta.assistants.retrieve(assistant_id=settings.openai.ASSISTANT_ID)
 
 # Initialise session state to store conversation history locally to display on UI
 if "chat_history" not in st.session_state:
@@ -37,7 +35,7 @@ if "chat_history" not in st.session_state:
 
 if check_password():
     # Title
-    st.title("Demo: OpenAI Assistants API Streaming")
+    st.title(settings.streamlit_texts.TITLE)
 
     # Display messages in chat history
     for message in st.session_state.chat_history:
@@ -45,7 +43,7 @@ if check_password():
             st.markdown(message["content"])
 
     # Textbox and streaming process
-    if user_query := st.chat_input("Ask me a question"):
+    if user_query := st.chat_input(settings.streamlit_texts.CHAT_INPUT):
         # Create a new thread if it does not exist
         if "thread_id" not in st.session_state:
             thread = client.beta.threads.create()
@@ -70,7 +68,7 @@ if check_password():
         with st.chat_message("assistant"):
             stream = client.beta.threads.runs.create(
                 thread_id=st.session_state.thread_id,
-                assistant_id=ASSISTANT_ID,
+                assistant_id=settings.openai.ASSISTANT_ID,
                 stream=True
             )
 
