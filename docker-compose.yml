@@ -1,0 +1,10 @@
+services:
+  streamlit-app:
+    build:
+      context: .
+      args:
+        - STREAMLIT_SYSTEM_PORT=${STREAMLIT_SYSTEM_PORT}
+    ports:
+      - "${STREAMLIT_SYSTEM_PORT}:${STREAMLIT_SYSTEM_PORT}"
+    env_file:
+      - .env
