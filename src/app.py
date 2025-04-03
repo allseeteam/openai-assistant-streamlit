@@ -1,11 +1,10 @@
-"""
-app.py
-"""
 import streamlit as st
 from openai import OpenAI
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
-from src.settings import settings
+
+from settings import settings
+
 
 def check_password():
     def password_entered():
@@ -24,17 +23,21 @@ def check_password():
         return False
     else:
         return True
+    
 
 # Initialize the OpenAI client, and retrieve the assistant
 client = OpenAI(api_key=settings.openai.API_KEY)
 assistant = client.beta.assistants.retrieve(assistant_id=settings.openai.ASSISTANT_ID)
 
+
 # Initialise session state to store conversation history locally to display on UI
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+
+# Check if the user has entered the correct password
 if check_password():
-    # Title
+    # Set the page title and layout
     st.title(settings.streamlit_texts.TITLE)
 
     # Display messages in chat history
@@ -54,8 +57,7 @@ if check_password():
             st.markdown(user_query)
 
         # Store the user's query into the history
-        st.session_state.chat_history.append({"role": "user",
-                                            "content": user_query})
+        st.session_state.chat_history.append({"role": "user", "content": user_query})
 
         # Add user query to the thread
         client.beta.threads.messages.create(
@@ -80,9 +82,6 @@ if check_password():
 
             # Iterate through the stream
             for event in stream:
-                # There are various types of streaming events
-                # See here: https://platform.openai.com/docs/api-reference/assistants-streaming/events
-
                 # Here, we only consider if there's a delta text
                 if isinstance(event, ThreadMessageDelta):
                     if isinstance(event.data.delta.content[0], TextDeltaBlock):
@@ -94,5 +93,4 @@ if check_password():
                         assistant_reply_box.markdown(assistant_reply)
 
             # Once the stream is over, update chat history
-            st.session_state.chat_history.append({"role": "assistant",
-                                                "content": assistant_reply})
+            st.session_state.chat_history.append({"role": "assistant", "content": assistant_reply})
