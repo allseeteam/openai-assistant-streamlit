@@ -2,6 +2,7 @@ import streamlit as st
 from openai import OpenAI
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
+import httpx
 
 from settings import settings
 
@@ -28,11 +29,14 @@ def check_password():
     
 
 @st.cache_resource(show_spinner=False)
-def get_openai_client(api_key: str):
+def get_openai_client(api_key: str, proxy_url: str = None):
     """
-    Function to initialize the OpenAI client with the API key.
+    Function to initialize the OpenAI client with the API key and optional proxy URL.
     """
-    return OpenAI(api_key=api_key)
+    return OpenAI(
+        api_key=api_key,
+        http_client=httpx.Client(proxy=proxy_url),
+    )
 
 
 @st.cache_resource(show_spinner=False)
@@ -49,7 +53,7 @@ if check_password():
     st.title(settings.streamlit_texts.TITLE)
 
     # Initialize the OpenAI client, and retrieve the assistant
-    client = get_openai_client(api_key=settings.openai.API_KEY)
+    client = get_openai_client(api_key=settings.openai.API_KEY, proxy_url=settings.openai.PROXY_URL)
     assistant = client.beta.assistants.retrieve(assistant_id=settings.openai.ASSISTANT_ID)
 
     # Initialise session state to store conversation history locally to display on UI
