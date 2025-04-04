@@ -27,6 +27,7 @@ cp .env.example .env
 # OpenAI Configuration
 OPENAI_API_KEY="your-api-key"
 OPENAI_ASSISTANT_ID="your-assistant-id"
+# OPENAI_PROXY_URL="your-proxy-url"  # Optional: Proxy URL for OpenAI API requests
 
 # Streamlit System Settings
 STREAMLIT_SYSTEM_PORT=8501
