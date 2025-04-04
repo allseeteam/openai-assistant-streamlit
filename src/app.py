@@ -17,28 +17,44 @@ def check_password():
     if "password_correct" not in st.session_state:
         st.text_input(settings.streamlit_texts.PASSWORD_REQUEST, type="password", on_change=password_entered, key="password")
         return False
+    
     elif not st.session_state["password_correct"]:
         st.text_input(settings.streamlit_texts.PASSWORD_REQUEST, type="password", on_change=password_entered, key="password")
         st.error(settings.streamlit_texts.PASSWORD_INCORRECT)
         return False
+    
     else:
         return True
     
 
-# Initialize the OpenAI client, and retrieve the assistant
-client = OpenAI(api_key=settings.openai.API_KEY)
-assistant = client.beta.assistants.retrieve(assistant_id=settings.openai.ASSISTANT_ID)
+@st.cache_resource(show_spinner=False)
+def get_openai_client(api_key: str):
+    """
+    Function to initialize the OpenAI client with the API key.
+    """
+    return OpenAI(api_key=api_key)
 
 
-# Initialise session state to store conversation history locally to display on UI
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-
+@st.cache_resource(show_spinner=False)
+def get_openai_assistant(_openai_client: OpenAI, assistant_id: str):
+    """
+    Function to retrieve the assistant using the OpenAI client.
+    """
+    return _openai_client.beta.assistants.retrieve(assistant_id=assistant_id)
+    
 
 # Check if the user has entered the correct password
 if check_password():
     # Set the page title and layout
     st.title(settings.streamlit_texts.TITLE)
+
+    # Initialize the OpenAI client, and retrieve the assistant
+    client = get_openai_client(api_key=settings.openai.API_KEY)
+    assistant = client.beta.assistants.retrieve(assistant_id=settings.openai.ASSISTANT_ID)
+
+    # Initialise session state to store conversation history locally to display on UI
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
 
     # Display messages in chat history
     for message in st.session_state.chat_history:
