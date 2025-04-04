@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,15 +10,18 @@ class OpenAISettings(BaseSettings):
     Attributes:
         API_KEY (str): OpenAI API key.
         ASSISTANT_ID (str): OpenAI Assistant ID.
+        PROXY_URL (Optional[str]): Proxy URL for OpenAI API requests. If None, no proxy is used.
     """
     model_config = SettingsConfigDict(
         env_file=".env",
         extra='ignore',
         env_prefix="OPENAI_",
+        env_ignore_empty=True,
     )
 
     API_KEY: str
     ASSISTANT_ID: str
+    PROXY_URL: Optional[str] = None
 
 
 class StreamlitSystemSettings(BaseSettings):
